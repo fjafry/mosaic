@@ -39,6 +39,7 @@ public class SumoVehicleClassMapping {
             .put("bicycle", VehicleClass.Bicycle)
             .put("motorcycle", VehicleClass.Motorcycle)
             .put("hov", VehicleClass.HighOccupancyVehicle)
+            .put("pedestrian", VehicleClass.Pedestrian)
             .build();
 
     public static String toSumo(VehicleClass vehicleClass) {

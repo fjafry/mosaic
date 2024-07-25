@@ -28,7 +28,7 @@ public enum VehicleClass {
     WorksVehicle(6), ExceptionalSizeVehicle(7), VehicleWithTrailer(8),
     HighSideVehicle(9), MiniBus(10), Taxi(11), ElectricVehicle(12),
     /* note: this is not provided in ISO-TS18234-4*/
-    AutomatedVehicle(13), Bicycle(14), Motorcycle(15), HighOccupancyVehicle(16);
+    AutomatedVehicle(13), Bicycle(14), Motorcycle(15), HighOccupancyVehicle(16), Pedestrian(17);
 
     public final int id;
 
