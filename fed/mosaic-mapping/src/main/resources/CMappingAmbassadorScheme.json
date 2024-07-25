@@ -11,7 +11,9 @@
         "prototypes": {
             "description": "Array of prototypes, which can complete the definitions of other objects. This can be used to re-use certain configurations. All possible properties of objects are available. Only the ones needed will be used (for example an RSU does not have a length, so this property would be ignored).",
             "type": "array",
-            "items": { "$ref": "#/definitions/prototype" }
+            "items": {
+                "$ref": "#/definitions/prototype"
+            }
         },
         "typeDistributions": {
             "description": "Object to define the distribution of prototypes to reuse in vehicle spawners. The typeDistribution is referenced by it's attribute name, which can be set to any valid string.",
@@ -20,37 +22,51 @@
         "vehicles": {
             "description": "Array of vehicles to be spawned in the simulation. This property describes the vehicles populatingthe simulation. It is possible to create a single vehicle (maxNumberVehicles should be '1' in that case) or a streamof one or multiple vehicles. The type(s) are defined in the field types. When more than one type is defined theweights in the prototype can be used to balance them against each other.",
             "type": "array",
-            "items": { "$ref": "#/definitions/vehicle" }
+            "items": {
+                "$ref": "#/definitions/vehicle"
+            }
         },
         "matrixMappers": {
             "description": "Array of items to define additional traffic that will be spawned using OD-matrices.",
             "type": "array",
-            "items": { "$ref": "#/definitions/matrixMapper" }
+            "items": {
+                "$ref": "#/definitions/matrixMapper"
+            }
         },
         "rsus": {
             "description": "Array of Road Side Units (RSUs). For RSUs only applications can be defined along with the position.",
             "type": "array",
-            "items": { "$ref": "#/definitions/rsu" }
+            "items": {
+                "$ref": "#/definitions/rsu"
+            }
         },
         "servers": {
             "description": "Array of servers. Servers are a form of units that have no geographical location. The network properties of a server can be defined in the network.json-configuration in the cell-module.",
             "type": "array",
-            "items": { "$ref": "#/definitions/server" }
+            "items": {
+                "$ref": "#/definitions/server"
+            }
         },
         "tmcs": {
             "description": "Array of Traffic Management Centers (TMCs). TMCs are specialized forms of servers having direct access to data collected by induction loops and lane area detectors. The network properties of a TMC can be defined in the network.json-configuration in the cell-module.",
             "type": "array",
-            "items": { "$ref": "#/definitions/tmc" }
+            "items": {
+                "$ref": "#/definitions/tmc"
+            }
         },
         "trafficLights": {
             "description": "Array of prototypes for traffic lights. Since it is a traffic light only applications can be defined. Traffic light prototypes can be distributed among all traffic lights of an application by weight or assigned to specific traffic lights by using the ID of traffic light groups as reference.",
             "type": "array",
-            "items": { "$ref": "#/definitions/trafficLights" }
+            "items": {
+                "$ref": "#/definitions/trafficLights"
+            }
         },
         "chargingStations": {
             "description": "Array of electric vehicle charging stations. An infrastructure which provides one or several electric vehicle charging spots to supply electric energy for charging electric vehicles.",
             "type": "array",
-            "items": { "$ref": "#/definitions/chargingStation" }
+            "items": {
+                "$ref": "#/definitions/chargingStation"
+            }
         }
     },
     "definitions": {
@@ -62,15 +78,29 @@
                 "start": {
                     "description": "Defines the point in time (in seconds) to start spawning vehicles. If not set (default), all vehicles will be spawned according to the vehicles configuration.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0, "default": 0.0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.0
+                        }
                     ]
                 },
                 "end": {
                     "description": "Defines the point in time (in seconds) to end spawning vehicles. If not set (default), all vehicles will be spawned according to the vehicles configuration or until the simulation ends.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0, "default": 0.0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.0
+                        }
                     ]
                 },
                 "scaleTraffic": {
@@ -136,15 +166,27 @@
                 "length": {
                     "description": "Length of the vehicle. If defined as a number, then the default unit is m. Alternatively this can be defined as a string to specify the unit of measurement (e.g. '500 cm').",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "exclusiveMinimum": 0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
                     ]
                 },
                 "maxSpeed": {
                     "description": "Maximal speed. If defined as a number, then the default unit is m/s. Alternatively this can be defined as a string to include the unit of measurement (e.g. '50 kmh').",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0
+                        }
                     ]
                 },
                 "speedFactor": {
@@ -155,8 +197,14 @@
                 "minGap": {
                     "description": "Distance in meter between front bumper of a vehicle and the back bumper of its leader in a traffic jam. If defined as a number, then the default unit is m. Alternatively this can be defined as a string to include the unit of measurement (e.g. '300 cm').",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "exclusiveMinimum": 0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
                     ]
                 },
                 "sigma": {
@@ -183,33 +231,61 @@
                     "description": "Predefined modes adjusting the lane change behavior.",
                     "type": "string",
                     "enum": [
-                        "DEFAULT", "OFF", "CAUTIOUS", "COOPERATIVE", "AGGRESSIVE", "PASSIVE"
+                        "DEFAULT",
+                        "OFF",
+                        "CAUTIOUS",
+                        "COOPERATIVE",
+                        "AGGRESSIVE",
+                        "PASSIVE"
                     ]
                 },
                 "speedMode": {
                     "description": "Predefined modes adjusting the speed appliance behavior.",
                     "type": "string",
                     "enum": [
-                        "DEFAULT", "CAUTIOUS", "NORMAL", "AGGRESSIVE", "SPEEDER"
+                        "DEFAULT",
+                        "CAUTIOUS",
+                        "NORMAL",
+                        "AGGRESSIVE",
+                        "SPEEDER",
+                        "UNSAFE"
                     ]
                 },
                 "vehicleClass": {
                     "description": "Class of the vehicle. The classes are used in lane definitions and allow/disallow the use of lanes for certain vehicle types (e.g. a taxi lane).",
                     "type": "string",
                     "enum": [
-                        "Unknown", "Car", "LightGoodsVehicle", "HeavyGoodsVehicle", "PublicTransportVehicle",
-                        "EmergencyVehicle", "WorksVehicle", "ExceptionalSizeVehicle", "VehicleWithTrailer",
-                        "HighSideVehicle", "MiniBus", "Taxi", "ElectricVehicle", "AutomatedVehicle",
-                        "Bicycle", "Motorcycle", "HighOccupancyVehicle"
+                        "Unknown",
+                        "Car",
+                        "LightGoodsVehicle",
+                        "HeavyGoodsVehicle",
+                        "PublicTransportVehicle",
+                        "EmergencyVehicle",
+                        "WorksVehicle",
+                        "ExceptionalSizeVehicle",
+                        "VehicleWithTrailer",
+                        "HighSideVehicle",
+                        "MiniBus",
+                        "Taxi",
+                        "ElectricVehicle",
+                        "AutomatedVehicle",
+                        "Bicycle",
+                        "Motorcycle",
+                        "HighOccupancyVehicle",
+                        "Pedestrian"
                     ]
                 },
                 "applications": {
                     "description": "The applications to be used for this object.",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
-            "required": [ "name" ]
+            "required": [
+                "name"
+            ]
         },
         "deviations": {
             "title": "Prototype Parameter Deviations",
@@ -272,7 +348,10 @@
                 "minItems": 1,
                 "items": {
                     "$ref": "#/definitions/prototype",
-                    "required": [ "name", "weight" ]
+                    "required": [
+                        "name",
+                        "weight"
+                    ]
                 }
             }
         },
@@ -284,15 +363,29 @@
                 "startingTime": {
                     "description": "Time in seconds at which the first vehicle will be created.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0, "default": 0.0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.0
+                        }
                     ]
                 },
                 "maxTime": {
                     "description": "Simulation time in seconds at which no more vehicles will be created.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0, "default": 0.0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.0
+                        }
                     ]
                 },
                 "targetFlow": {
@@ -309,15 +402,23 @@
                 "departSpeed": {
                     "description": "The speed at which the vehicle is supposed to depart. If defined as a number, then the default unit is m/s. Alternatively this can be defined as a string to include the unit of measurement (e.g. '10 kmh'). Depending on the simulator this value may only be used if departSpeedMode is set to PRECISE.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0
+                        }
                     ]
                 },
                 "departSpeedMode": {
                     "description": "The depart speed mode determines the vehicle's speed at insertion.",
                     "type": "string",
                     "enum": [
-                        "PRECISE", "RANDOM", "MAXIMUM"
+                        "PRECISE",
+                        "RANDOM",
+                        "MAXIMUM"
                     ],
                     "default": "MAXIMUM"
                 },
@@ -325,7 +426,15 @@
                     "description": "The lane selection mode chooses the lane for the next departing vehicle.",
                     "type": "string",
                     "enum": [
-                        "DEFAULT", "ROUNDROBIN", "ROUNDROBIN_HIGHWAY", "HIGHWAY", "RANDOM", "FREE", "ALLOWED", "BEST", "FIRST"
+                        "DEFAULT",
+                        "ROUNDROBIN",
+                        "ROUNDROBIN_HIGHWAY",
+                        "HIGHWAY",
+                        "RANDOM",
+                        "FREE",
+                        "ALLOWED",
+                        "BEST",
+                        "FIRST"
                     ],
                     "default": "DEFAULT"
                 },
@@ -333,7 +442,13 @@
                     "description": "Adjusts the departure time of individual vehicles.",
                     "type": "string",
                     "enum": [
-                        "CONSTANT", "GROW", "POISSON", "SHRINK", "GROW_AND_SHRINK", "GROW_EXPONENTIAL", "SHRINK_EXPONENTIAL",
+                        "CONSTANT",
+                        "GROW",
+                        "POISSON",
+                        "SHRINK",
+                        "GROW_AND_SHRINK",
+                        "GROW_EXPONENTIAL",
+                        "SHRINK_EXPONENTIAL",
                         "GROW_AND_SHRINK_EXPONENTIAL"
                     ],
                     "default": "CONSTANT"
@@ -352,7 +467,9 @@
                 },
                 "route": {
                     "description": "Route that the vehicle(s) should use. If an origin and a destination are specified this route will be treated as a preference (i.e. it will be selected if it connects the two points in question).",
-                    "type": [ "string" ]
+                    "type": [
+                        "string"
+                    ]
                 },
                 "lanes": {
                     "description": "Array of numbers to define the lanes to be used. The vehicles will be evenly distributed among the given lanes. When no value is given lane zero will be used for all vehicles.",
@@ -366,7 +483,9 @@
                     "description": "List of possible vehicle types to be spawned. In this list you can simply refer to an existing prototype by its name attribute to include everything defined there. You can also overwrite every attribute of the prototype. If you don't have an existing prototype the definitions found here will be used as the prototype definition itself.",
                     "type": "array",
                     "minItems": 1,
-                    "items": { "$ref": "#/definitions/prototype" }
+                    "items": {
+                        "$ref": "#/definitions/prototype"
+                    }
                 },
                 "typeDistribution": {
                     "description": "Identifier of the typeDistribution which defines the distribution of vehicle types.",
@@ -382,10 +501,32 @@
                 }
             },
             "oneOf": [
-                { "required": [ "types", "route" ] },
-                { "required": [ "typeDistribution", "route" ] },
-                { "required": [ "types", "origin", "destination" ] },
-                { "required": [ "typeDistribution", "origin", "destination" ] }
+                {
+                    "required": [
+                        "types",
+                        "route"
+                    ]
+                },
+                {
+                    "required": [
+                        "typeDistribution",
+                        "route"
+                    ]
+                },
+                {
+                    "required": [
+                        "types",
+                        "origin",
+                        "destination"
+                    ]
+                },
+                {
+                    "required": [
+                        "typeDistribution",
+                        "origin",
+                        "destination"
+                    ]
+                }
             ]
         },
         "matrixMapper": {
@@ -396,40 +537,61 @@
                 "points": {
                     "description": "Array of odPoints that can be referenced from the OD-matrix.",
                     "type": "array",
-                    "items": { "$ref": "#/definitions/odPoint" }
+                    "items": {
+                        "$ref": "#/definitions/odPoint"
+                    }
                 },
                 "types": {
                     "description": "Array of prototypes to define the vehicles that should be spawned.",
                     "type": "array",
-                    "items": { "$ref": "#/definitions/prototype" }
+                    "items": {
+                        "$ref": "#/definitions/prototype"
+                    }
                 },
                 "odValues": {
                     "description": "Values for the OD-matrix. Unit should be vehicles/hour.",
                     "type": "array",
                     "items": {
                         "type": "array",
-                        "items": { "type": "number" }
+                        "items": {
+                            "type": "number"
+                        }
                     }
                 },
                 "startingTime": {
                     "description": "Time in seconds at which the first vehicle will be created.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0, "default": 0.0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0,
+                            "default": 0.0
+                        }
                     ]
                 },
                 "maxTime": {
                     "description": "Simulation time in seconds at which no more vehicles will be created.",
                     "anyOf": [
-                        { "type": "string", "maxLength": 15 },
-                        { "type": "number", "minimum": 0 }
+                        {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 0
+                        }
                     ]
                 },
                 "departSpeedMode": {
                     "description": "The depart speed mode determines the vehicle's speed at insertion.",
                     "type": "string",
                     "enum": [
-                        "PRECISE", "RANDOM", "MAXIMUM"
+                        "PRECISE",
+                        "RANDOM",
+                        "MAXIMUM"
                     ],
                     "default": "MAXIMUM"
                 },
@@ -437,12 +599,23 @@
                     "description": "The lane selection mode chooses the lane for the next departing vehicle.",
                     "type": "string",
                     "enum": [
-                        "DEFAULT", "ROUNDROBIN", "ROUNDROBIN_HIGHWAY", "HIGHWAY", "RANDOM", "FREE", "ALLOWED", "BEST", "FIRST"
+                        "DEFAULT",
+                        "ROUNDROBIN",
+                        "ROUNDROBIN_HIGHWAY",
+                        "HIGHWAY",
+                        "RANDOM",
+                        "FREE",
+                        "ALLOWED",
+                        "BEST",
+                        "FIRST"
                     ],
                     "default": "DEFAULT"
                 }
             },
-            "required": [ "points", "odValues" ]
+            "required": [
+                "points",
+                "odValues"
+            ]
         },
         "rsu": {
             "title": "rsu",
@@ -464,10 +637,14 @@
                 "applications": {
                     "description": "Array of strings that specifies the applications to be used for this object. If none are specified, none are used",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
-            "required": [ "position" ]
+            "required": [
+                "position"
+            ]
         },
         "server": {
             "title": "server",
@@ -485,7 +662,9 @@
                 "applications": {
                     "description": "The applications to be used for this object. If none are specified, none are used.",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -505,17 +684,23 @@
                 "applications": {
                     "description": "The applications to be used for this object. If none are specified, none are used.",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "inductionLoops": {
                     "description": "The induction loops the TMC shall be matched with. If none are specified, none are used.",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "laneAreaDetectors": {
                     "description": "The lane area detectors the TMC shall be matched with. If none are specified, none are used.",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -544,10 +729,12 @@
                 "applications": {
                     "description": "The applications to be used for this object. If none are specified, none are used",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
-            "required": [ ]
+            "required": []
         },
         "chargingStation": {
             "title": "chargingStation",
@@ -569,15 +756,22 @@
                 "chargingSpots": {
                     "description": "List of the electric vehicle charging spots associated with this electric vehicle charging station.",
                     "type": "array",
-                    "items": { "$ref": "#/definitions/chargingSpot" }
+                    "items": {
+                        "$ref": "#/definitions/chargingSpot"
+                    }
                 },
                 "applications": {
                     "description": "The application to be used for this object.",
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
-            "required": [ "position", "chargingSpots" ]
+            "required": [
+                "position",
+                "chargingSpots"
+            ]
         },
         "chargingSpot": {
             "title": "chargingSpot",
@@ -588,7 +782,9 @@
                     "description": "The type of this electric vehicle charging spot.",
                     "type": "string",
                     "enum": [
-                        "AC_1_PHASE", "AC_3_PHASE", "DC"
+                        "AC_1_PHASE",
+                        "AC_3_PHASE",
+                        "DC"
                     ]
                 },
                 "maxVoltage": {
@@ -602,7 +798,11 @@
                     "minimum": 0.0
                 }
             },
-            "required": [ "chargingType", "maxVoltage", "maxCurrent" ]
+            "required": [
+                "chargingType",
+                "maxVoltage",
+                "maxCurrent"
+            ]
         },
         "odPoint": {
             "title": "odPoint",
@@ -618,7 +818,10 @@
                     "$ref": "#/definitions/geoCircle"
                 }
             },
-            "required": [ "name", "position" ]
+            "required": [
+                "name",
+                "position"
+            ]
         },
         "geoCircle": {
             "title": "geoCircle",
@@ -635,7 +838,10 @@
                     "minimum": 0
                 }
             },
-            "required": [ "radius", "center" ]
+            "required": [
+                "radius",
+                "center"
+            ]
         },
         "geoPoint": {
             "title": "GeoPoint",
@@ -655,7 +861,10 @@
                     "minimum": -90
                 }
             },
-            "required": [ "longitude", "latitude" ]
+            "required": [
+                "longitude",
+                "latitude"
+            ]
         }
     }
 }

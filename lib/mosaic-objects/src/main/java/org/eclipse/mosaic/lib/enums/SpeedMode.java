@@ -21,5 +21,6 @@ public enum SpeedMode {
     CAUTIOUS, // regards safe speed, max decel, right of way at intersections, brakes hard at red light (31 in SUMO)
     NORMAL, // does not brakes hard for avoiding red lights (15 in SUMO)
     AGGRESSIVE, // does not regard safe speed, right of way at intersections, and does not brakes hard for avoiding red lights (6 in SUMO)
-    SPEEDER // DEFAULT, but without respect to speed limits
+    SPEEDER, // DEFAULT, but without respect to speed limits
+    UNSAFE; // does not regard safe speed, right of way at intersections, run a red light even if the intersection is occupied  (38 in SUMO)
 }

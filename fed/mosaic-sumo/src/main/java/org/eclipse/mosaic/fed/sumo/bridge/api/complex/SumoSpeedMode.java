@@ -54,6 +54,14 @@ public class SumoSpeedMode {
                 mode.setRegardRightOfWay(true);
                 mode.setBrakeHardToAvoidRedLight(false);
                 break;
+            case UNSAFE:
+                mode.setRegardSafeSpeed(false);
+                mode.setRegardMaximumAcceleration(true);
+                mode.setRegardMaximumDeceleration(true);
+                mode.setRegardRightOfWay(false);
+                mode.setBrakeHardToAvoidRedLight(false);
+                mode.setDisregardRightOfWay(true);
+                break;
             case DEFAULT:
                 mode.setRegardSafeSpeed(true);
                 mode.setRegardMaximumAcceleration(true);
@@ -99,6 +107,17 @@ public class SumoSpeedMode {
      */
     public SumoSpeedMode setRegardRightOfWay(boolean regardRightOfWay) {
         setOrUnset(3, regardRightOfWay);
+        return this;
+    }
+
+    /**
+     * Disregard right of way at intersections.
+     *
+     * @param disregardRightOfWay Boolean value indicating to ignore the right of way.
+     * @return Specific sumo speed mode for driving on the right side.
+     */
+    public SumoSpeedMode setDisregardRightOfWay(boolean disregardRightOfWay) {
+        setOrUnset(5, disregardRightOfWay);
         return this;
     }
 
