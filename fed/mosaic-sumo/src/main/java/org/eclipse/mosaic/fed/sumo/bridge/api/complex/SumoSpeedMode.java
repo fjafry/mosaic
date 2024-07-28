@@ -56,8 +56,8 @@ public class SumoSpeedMode {
                 break;
             case UNSAFE:
                 mode.setRegardSafeSpeed(false);
-                mode.setRegardMaximumAcceleration(true);
-                mode.setRegardMaximumDeceleration(true);
+                mode.setRegardMaximumAcceleration(false);
+                mode.setRegardMaximumDeceleration(false);
                 mode.setRegardRightOfWay(false);
                 mode.setBrakeHardToAvoidRedLight(false);
                 mode.setDisregardRightOfWay(true);
