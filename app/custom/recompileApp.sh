@@ -7,14 +7,19 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+path="$1"
+
+
 # cd to the app folder
-cd $1
+cd $path
+
+last_part="${path##*/}"
 
 # clean and install the app
 mvn clean install
 
 echo "App recompiled. Copying jar to shared folder"
 # copy the compiled jar from the target folder to a shared folder
-cp target/*.jar ~/thesis/mosaic/scenarios/IngolstadtCross/application/$1.jar
+cp target/*.jar ~/thesis/mosaic/scenarios/IngolstadtCross/application/$last_part.jar
 
 echo "Done"
