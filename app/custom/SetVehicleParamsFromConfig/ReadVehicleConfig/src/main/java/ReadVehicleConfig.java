@@ -52,6 +52,8 @@ import java.util.List;
          }
          getLog().info("Wanted speed from config equals " + this.config.initialSetSpeed);
          getLog().info("Configs speedMode equals " + this.config.speedMode);
+         getLog().info("Configs stopAt equals " + this.config.stopAt);
+         getLog().info("Configs stopFor equals " + this.config.stopFor);
      }
  
  }
