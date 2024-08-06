@@ -148,6 +148,13 @@
             <version>${mosaic.version}</version>
         </dependency>
 
+        <!-- Custom Applications -->
+        <dependency>
+            <groupId>org.eclipse.mosaic.app</groupId>
+            <artifactId>custom-applications</artifactId>
+            <version>${mosaic.version}</version>
+        </dependency>
+
 
         <!-- Dependencies -->
         <dependency>

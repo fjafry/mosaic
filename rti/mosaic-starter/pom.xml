@@ -135,6 +135,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Custom applications -->
+        <dependency>
+            <groupId>org.eclipse.mosaic.app</groupId>
+            <artifactId>custom-applications</artifactId>
+            <version>${mosaic.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.eclipse.mosaic</groupId>
