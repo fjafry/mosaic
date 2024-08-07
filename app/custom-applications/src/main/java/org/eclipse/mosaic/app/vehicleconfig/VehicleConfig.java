@@ -13,7 +13,7 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
- package org.eclipse.mosaic.app.vehicleconfig;
+package org.eclipse.mosaic.app.vehicleconfig;
 
 public class VehicleConfig {
     public int speedMode;

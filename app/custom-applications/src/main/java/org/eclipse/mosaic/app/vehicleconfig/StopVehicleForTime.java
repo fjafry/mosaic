@@ -13,7 +13,7 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
- package org.eclipse.mosaic.app.vehicleconfig;
+package org.eclipse.mosaic.app.vehicleconfig;
 
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
@@ -22,31 +22,34 @@ import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 
 import org.eclipse.mosaic.lib.enums.VehicleStopMode;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import org.eclipse.mosaic.rti.TIME;
 
 /**
- * This application sets the speed mode for the vehicle in SUMO through the interface
- * provided by MOSAIC which allows sending messages to TraCI and reacting on received TraCI response.
+ * This application stops the vehicle in stopAt seconds for stopFor seconds
  */
-public class StopVehicleForTime extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication{
+public class StopVehicleForTime extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication {
 
     static class StopVehicleConfig {
         protected final int stopAt;
         protected final int stopFor;
+
         public StopVehicleConfig(int stopAt, int stopFor) {
             this.stopAt = stopAt;
             this.stopFor = stopFor;
         }
     }
+
     @Override
     public void onStartup() {
         getLog().infoSimTime(this, "Startup of stop vehicle by reading from config");
         getLog().infoSimTime(
-                    this,
-                    "Attempt to get config on next process event"
-            );
+                this,
+                "Attempt to get config on next process event"
+        );
     }
 
     @Override
@@ -66,19 +69,18 @@ public class StopVehicleForTime extends AbstractApplication<VehicleOperatingSyst
         if (resource instanceof VehicleConfig) {
             VehicleConfig config = (VehicleConfig) resource;
             getLog().infoSimTime(this, "Vehicle config read from json file");
-            getLog().info("Configs stopAt equals " + config.stopAt);
-            getLog().info("Configs stopFor equals " + config.stopFor);
-            
+            getLog().info("Configs stopAt equals {}", config.stopAt);
+            getLog().info("Configs stopFor equals {}", config.stopFor);
+
             StopVehicleConfig stopVehicleConfig = new StopVehicleConfig(config.stopAt, config.stopFor);
-        this.getOs().getEventManager()
-        .newEvent(getOs().getSimulationTime() + config.stopAt * TIME.SECOND, this)
-        .withResource(stopVehicleConfig)
-        .schedule();
-        }
-        else if (resource instanceof StopVehicleConfig) {
+            this.getOs().getEventManager()
+                    .newEvent(getOs().getSimulationTime() + config.stopAt * TIME.SECOND, this)
+                    .withResource(stopVehicleConfig)
+                    .schedule();
+        } else if (resource instanceof StopVehicleConfig) {
             StopVehicleConfig config = (StopVehicleConfig) resource;
             getLog().infoSimTime(this, "Will stop vehicle now");
-            this.getOs().stopNow(VehicleStopMode.STOP, config.stopFor * TIME.SECOND);       
+            this.getOs().stopNow(VehicleStopMode.STOP, config.stopFor * TIME.SECOND);
         }
     }
 }
