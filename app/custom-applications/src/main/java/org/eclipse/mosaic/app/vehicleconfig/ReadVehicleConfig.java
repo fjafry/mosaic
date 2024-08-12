@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * A configuration file(s) should be placed in "application" folder.
- * The filename can end with "_unitId" (e.g. ReadVehicleConfig.json) and will then only be used by the specified unit.
+ * The filename can end with "_unitId" (e.g. ReadVehicleConfig_veh_1.json) and will then only be used by the specified unit.
  * It allows configuring one application in different ways for different vehicles.
  * If the configuration filename doesn't include any unit id, it will be used for all unspecified units.
  */

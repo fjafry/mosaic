@@ -13,8 +13,9 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
-package org.eclipse.mosaic.app.vehicleconfig;
+package org.eclipse.mosaic.app.traci;
 
+import org.eclipse.mosaic.app.vehicleconfig.VehicleConfig;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.fed.application.app.api.MosaicApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
@@ -32,10 +33,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * This application stops the vehicle at the specified position in SUMO through the interface
- * provided by MOSAIC which allows sending messages to TraCI and reacting on received TraCI response.
+ * This application stops the vehicle at the specified position in SUMO through
+ * the interface
+ * provided by MOSAIC which allows sending messages to TraCI and reacting on
+ * received TraCI response.
  */
-public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication, MosaicApplication {
+public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingSystem>
+        implements VehicleApplication, MosaicApplication {
 
     static class StopVehicleConfig {
         protected final String edgeId;
@@ -56,9 +60,11 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
     private String lastSentMsgId;
 
     /**
-     * Here a byte array is assembled that follows the traci protocol. With the byte array constructed
+     * Here a byte array is assembled that follows the traci protocol. With the byte
+     * array constructed
      * here we instruct sumo directly to get the heading for the
-     * provided vehicle. <a href="https://sumo.dlr.de/docs/TraCI/Change_Vehicle_State.html">...</a>
+     * provided vehicle.
+     * <a href="https://sumo.dlr.de/docs/TraCI/Change_Vehicle_State.html">...</a>
      *
      * @param vehicleId Vehicle to set the speed mode of
      * @return The byte array to be sent to sumo
@@ -66,7 +72,7 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
     private byte[] assembleTraciCommand(String vehicleId, StopVehicleConfig stopConfig) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final DataOutputStream dos = new DataOutputStream(baos);
-        final byte TRACI_VEHICLE_CHANGE = (byte) 0xc4;  // Bits Traci Command (0xc4 for vehicle value change)
+        final byte TRACI_VEHICLE_CHANGE = (byte) 0xc4; // Bits Traci Command (0xc4 for vehicle value change)
         final byte TRACI_SET_STOP = (byte) 0x12; // Bits Traci Variable Identifier (0x12 for stop)
 
         try {
@@ -74,19 +80,19 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
             dos.writeByte(TRACI_SET_STOP);
             dos.writeInt(vehicleId.length()); // Length of Vehicle Identifier
             dos.write(vehicleId.getBytes(StandardCharsets.UTF_8)); // Vehicle Identifier
-            dos.writeByte(0x0f); //compound type
+            dos.writeByte(0x0f); // compound type
             dos.writeInt(5); // number of parameters
-            dos.writeByte(0xc); //string type
+            dos.writeByte(0xc); // string type
             dos.writeInt(stopConfig.edgeId.length()); // Length of edgeId
             dos.write(stopConfig.edgeId.getBytes(StandardCharsets.UTF_8));
-            dos.writeByte(0xb); //double type
-            dos.writeDouble(stopConfig.endPos); //endPos
-            dos.writeByte(0x8); //byte type
-            dos.writeByte((byte) stopConfig.laneIndex); //laneIndex
-            dos.writeByte(0xb); //double type
-            dos.writeDouble(stopConfig.duration); //duration
-            dos.writeByte(0x8); //byte type
-            dos.writeByte((byte) stopConfig.stopFlags); //stopFlags
+            dos.writeByte(0xb); // double type
+            dos.writeDouble(stopConfig.endPos); // endPos
+            dos.writeByte(0x8); // byte type
+            dos.writeByte((byte) stopConfig.laneIndex); // laneIndex
+            dos.writeByte(0xb); // double type
+            dos.writeDouble(stopConfig.duration); // duration
+            dos.writeByte(0x8); // byte type
+            dos.writeByte((byte) stopConfig.stopFlags); // stopFlags
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -98,14 +104,12 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
         getLog().infoSimTime(this, "Startup of stop vehicle at position");
         getLog().infoSimTime(
                 this,
-                "Attempt to get config on next process event"
-        );
+                "Attempt to get config on next process event");
     }
 
     @Override
     public void onVehicleUpdated(@Nullable VehicleData previousVehicleData, @Nonnull VehicleData updatedVehicleData) {
     }
-
 
     @Override
     public void onShutdown() {
@@ -117,8 +121,7 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
         if (sumoTraciResult.getRequestCommandId().equals(lastSentMsgId)) {
             getLog().infoSimTime(
                     this,
-                    "Received TraCI message from Sumo. Stop of vehicle is set"
-            );
+                    "Received TraCI message from Sumo. Stop of vehicle is set");
         }
     }
 
@@ -136,7 +139,8 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
             getLog().infoSimTime(this, "Vehicle config read from json file");
             getLog().info("Configs stop at position received");
 
-            StopVehicleConfig stopVehicleConfig = new StopVehicleConfig(config.edgeId, config.endPos, config.laneIndex, config.duration, config.stopFlags);
+            StopVehicleConfig stopVehicleConfig = new StopVehicleConfig(config.edgeId, config.endPos, config.laneIndex,
+                    config.duration, config.stopFlags);
             this.getOs().getEventManager()
                     .newEvent(getOs().getSimulationTime() + 1, this)
                     .withResource(stopVehicleConfig)
@@ -149,8 +153,7 @@ public class StopVehicleAtPosition extends AbstractApplication<VehicleOperatingS
             if (!lastSentMsgId.isEmpty()) {
                 getLog().infoSimTime(
                         this,
-                        "set sumo stop"
-                );
+                        "set sumo stop");
             }
         }
     }
