@@ -15,18 +15,15 @@
 
 package org.eclipse.mosaic.app.vehicle;
 
+import org.eclipse.mosaic.app.traci.SlowDownParams;
 import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
+import org.eclipse.mosaic.fed.application.app.api.Application;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
-import org.eclipse.mosaic.lib.enums.AdHocChannel;
-import org.eclipse.mosaic.lib.enums.SensorType;
-import org.eclipse.mosaic.lib.geo.GeoPoint;
-import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
-import org.eclipse.mosaic.lib.objects.v2x.etsi.Denm;
-import org.eclipse.mosaic.lib.objects.v2x.etsi.DenmContent;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
-import org.eclipse.mosaic.rti.TIME;
+
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +40,6 @@ public class EmergencyBrake extends ConfigurableApplication<EmergencyBrakeConfig
 
     // Keep status of the emergency brake performed on obstacle
     private boolean emergencyBrake = false;
-    private long stoppedAt = Long.MIN_VALUE;
     EmergencyBrakeConfig config;
 
     /**
@@ -74,11 +70,25 @@ public class EmergencyBrake extends ConfigurableApplication<EmergencyBrakeConfig
         if (resource instanceof EmergencyBrakeTrigger) {
             // Initiate emergency brake if obstacle is detected
             if (!emergencyBrake) {
-                stoppedAt = getOs().getSimulationTime();
-                getOs().changeSpeedWithForcedAcceleration(config.targetSpeed,
-                        config.deceleration);
                 emergencyBrake = true;
                 getLog().infoSimTime(this, "Performing emergency brake caused by detected obstacle");
+                double maxDecel = config.deceleration;
+                double targetSpeed = config.targetSpeed;
+                double currentSpeed = getOs().getVehicleData().getSpeed();
+                double duration = (currentSpeed - targetSpeed) / maxDecel;
+                List<? extends Application> applications = getOs().getApplications();
+                for (Application application : applications) {
+                    String appName = application.getClass().getSimpleName();
+                    if (appName.equals("SlowDown")) {
+                        getLog().infoSimTime(this, "Found SlowDown, scheduling event");
+                        SlowDownParams params = new SlowDownParams(targetSpeed, duration);
+                        this.getOs().getEventManager()
+                                .newEvent(getOs().getSimulationTime() + 1, application)
+                                .withResource(params)
+                                .schedule();
+                    }
+                }
+
             }
         }
 
