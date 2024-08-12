@@ -25,4 +25,5 @@ public class VehicleConfig {
     public int laneIndex;
     public double duration;
     public int stopFlags;
+    public double emergencyBrakeMinTTC;
 }

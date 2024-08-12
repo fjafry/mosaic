@@ -36,14 +36,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * This application sends a CAM (Cooperative Awareness Message) with an additional information (user tagged value)
+ * This application sends a CAM (Cooperative Awareness Message) with an
+ * additional information (user tagged value)
  * by using the {@link CamBuilder#userTaggedValue(byte[])}) method.
- * In this way an additional byte field can be sent via CAM, nevertheless this is often connected with some serious work.
+ * In this way an additional byte field can be sent via CAM, nevertheless this
+ * is often connected with some serious work.
  * You may also want to safely serialize / deserialize objects.
  * <p>
- * The CAMs will be sent by an ad hoc module so that only vehicles with an enabled ad hoc module can receive it.
+ * The CAMs will be sent by an ad hoc module so that only vehicles with an
+ * enabled ad hoc module can receive it.
  **/
-public class SendCAM extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication, CommunicationApplication {
+public class SendCAM extends AbstractApplication<VehicleOperatingSystem>
+        implements VehicleApplication, CommunicationApplication {
 
     /**
      * If the control of every byte is not needed, the
@@ -63,19 +67,20 @@ public class SendCAM extends AbstractApplication<VehicleOperatingSystem> impleme
     }
 
     /**
-     * Setting up the communication module and scheduling next event for the next second.
+     * Setting up the communication module and scheduling next event for the next
+     * second.
      */
     @Override
     public void onStartup() {
         getOs().getAdHocModule().enable(new AdHocModuleConfiguration()
                 .camMinimalPayloadLength(200L)
-                .addRadio().channel(AdHocChannel.CCH).power(50).create()
-        );
+                .addRadio().channel(AdHocChannel.CCH).power(50).create());
         getLog().infoSimTime(this, "Set up");
-        //sendCam(); Don't do this here! Sending CAMs only makes
-        // sense when we have access to vehicle info of sender, which is not ready at the set up stage.
+        // sendCam(); Don't do this here! Sending CAMs only makes
+        // sense when we have access to vehicle info of sender, which is not ready at
+        // the set up stage.
 
-        getOs().getEventManager().addEvent(getOs().getSimulationTime() + TIME.SECOND, this);
+        getOs().getEventManager().addEvent(getOs().getSimulationTime() + 1, this);
     }
 
     /**
@@ -83,7 +88,8 @@ public class SendCAM extends AbstractApplication<VehicleOperatingSystem> impleme
      */
     @Override
     public void processEvent(Event event) {
-        if (!("VehicleConfig".equals(event.getResourceClassSimpleName()))){ // ignore for events created by vehicle config reading 
+        if (!("VehicleConfig".equals(event.getResourceClassSimpleName()))) { // ignore for events created by vehicle
+                                                                             // config reading
             sendCam();
             getOs().getEventManager().addEvent(getOs().getSimulationTime() + 100 * TIME.MILLI_SECOND, this);
         }
@@ -104,20 +110,22 @@ public class SendCAM extends AbstractApplication<VehicleOperatingSystem> impleme
 
     @Override
     public void onCamBuilding(CamBuilder camBuilder) {
-        // this method will be triggered from the operating system (may a CAM or DENM will be prepared to send)
+        // this method will be triggered from the operating system (may a CAM or DENM
+        // will be prepared to send)
         // create a new object
-        // CamSendingApp.MyComplexTaggedValue exampleContent = new CamSendingApp.MyComplexTaggedValue();
+        // CamSendingApp.MyComplexTaggedValue exampleContent = new
+        // CamSendingApp.MyComplexTaggedValue();
         // exampleContent.fooInt = 5;
         // exampleContent.fooString = "Hello from " + (getOs().getVehicleData() != null
-        //         ? getOs().getVehicleData().getName()
-        //         : "unknown vehicle"
+        // ? getOs().getVehicleData().getName()
+        // : "unknown vehicle"
         // );
 
         // try {
-        //     byte[] byteArray = DEFAULT_OBJECT_SERIALIZATION.toBytes(exampleContent);
-        //     camBuilder.userTaggedValue(byteArray);
+        // byte[] byteArray = DEFAULT_OBJECT_SERIALIZATION.toBytes(exampleContent);
+        // camBuilder.userTaggedValue(byteArray);
         // } catch (IOException ex) {
-        //     getLog().error("Error during a serialization.", ex);
+        // getLog().error("Error during a serialization.", ex);
         // }
     }
 
