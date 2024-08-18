@@ -21,7 +21,6 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.Ad
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.fed.application.app.api.Application;
 import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
@@ -73,23 +72,7 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
                     camMsg.getUnitID(),
                     camMsg.getPosition(),
                     camMsg.getGenerationTime());
-            double ttc = calculateTTC(getOs().getVehicleData(), camMsg.getPosition().toCartesian());
-            if (ttc <= emergencyBrakeMinTTC) {
-                // should apply emergency brake
-                getLog().infoSimTime(this, "Should apply emergency break now. TTC value is {}", ttc);
-                List<? extends Application> applications = getOs().getApplications();
-                for (Application application : applications) {
-                    String appName = application.getClass().getSimpleName();
-                    if (appName.equals("EmergencyBrake")) {
-                        getLog().infoSimTime(this, "Found EmergencyBrake, scheduling event");
-                        EmergencyBrakeTrigger trigger = new EmergencyBrakeTrigger(ttc, camMsg.getPosition());
-                        this.getOs().getEventManager()
-                                .newEvent(getOs().getSimulationTime() + 1, application)
-                                .withResource(trigger)
-                                .schedule();
-                    }
-                }
-            }
+            checkEmergencyBrake(camMsg.getPosition().toCartesian());
 
         } else {
             getLog().infoSimTime(this, "Arrived message was not a CAM, but a {} msg from {}", msg.getSimpleClassName(),
@@ -142,5 +125,25 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
         }
         getLog().debugSimTime(this, "TTC: {}", ttc);
         return ttc;
+    }
+
+    private void checkEmergencyBrake(CartesianPoint otherPosition) {
+        double ttc = calculateTTC(getOs().getVehicleData(), otherPosition);
+        if (ttc <= emergencyBrakeMinTTC) {
+            // should apply emergency brake
+            getLog().infoSimTime(this, "Should apply emergency break now. TTC value is {}", ttc);
+            List<? extends Application> applications = getOs().getApplications();
+            for (Application application : applications) {
+                String appName = application.getClass().getSimpleName();
+                if (appName.equals("EmergencyBrake")) {
+                    getLog().infoSimTime(this, "Found EmergencyBrake, scheduling event");
+                    EmergencyBrakeTrigger trigger = new EmergencyBrakeTrigger(ttc, otherPosition);
+                    this.getOs().getEventManager()
+                            .newEvent(getOs().getSimulationTime() + 1, application)
+                            .withResource(trigger)
+                            .schedule();
+                }
+            }
+        }
     }
 }

@@ -26,4 +26,5 @@ public class VehicleConfig {
     public double duration;
     public int stopFlags;
     public double emergencyBrakeMinTTC;
+    public String perceptionTargetId;
 }
