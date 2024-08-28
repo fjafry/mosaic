@@ -68,10 +68,10 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
         if (msg instanceof Cam) {
             Cam camMsg = (Cam) msg;
             getLog().infoSimTime(this,
-                    "CAM message arrived, from vehicle: {}, at position: {}. Generated at time: {}",
+                    "CAM message arrived, from vehicle: {}, at position: {}. transmission delay: {}",
                     camMsg.getUnitID(),
                     camMsg.getPosition(),
-                    camMsg.getGenerationTime());
+                    (getOs().getSimulationTime() - camMsg.getGenerationTime()));
             checkEmergencyBrake(camMsg.getPosition().toCartesian());
 
         } else {
