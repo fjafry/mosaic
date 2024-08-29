@@ -39,6 +39,11 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
     private double reactionTime;
     private long emergencyTriggeredAt;
 
+    private double distance;
+    private double minDistance = Double.MAX_VALUE;
+    private double distanceAtTrigger;
+    private double distanceAtReaction;
+
     /**
      * The angle used by the perception module. [degree]
      */
@@ -71,6 +76,9 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         getLog().info("Plain TTC at trigger: {}", PlainTTCAtTrigger);
         getLog().info("Reaction time: {}", reactionTime);
         getLog().info("Emergency triggered at: {}", emergencyTriggeredAt);
+        getLog().info("Minimum distance: {}", minDistance);
+        getLog().info("Distance at trigger: {}", distanceAtTrigger);
+        getLog().info("Distance at reaction: {}", distanceAtReaction);
     }
 
     @Override
@@ -89,6 +97,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             String resourceString = (String) resource;
             if (resourceString.equals("StoreTTC")) {
                 ActualTTCAtReaction = ttc;
+                distanceAtReaction = distance;
             }
         }
     }
@@ -103,6 +112,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             PlainTTCAtTrigger = metricsInteraction.getPlainTTC();
             reactionTime = metricsInteraction.getReactionTime();
             emergencyTriggeredAt = metricsInteraction.getTriggerTime();
+            distanceAtTrigger = distance;
             this.getOs().getEventManager()
                     .newEvent(getOs().getSimulationTime() + (long) (reactionTime * TIME.SECOND),
                             this)
@@ -136,6 +146,10 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         Vector3d v2 = getVectorFromSpeedAndHeading(vru.getSpeed(), vru.getHeading());
 
         Vector3d d = r1.subtract(r2);
+        distance = d.magnitude();
+        if (distance < minDistance) {
+            minDistance = distance;
+        }
         Vector3d v_rel = v2.subtract(v1);
         if (v_rel.magnitude() == 0) {
             return;
