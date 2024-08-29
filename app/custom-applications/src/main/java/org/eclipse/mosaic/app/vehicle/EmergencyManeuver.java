@@ -1,8 +1,6 @@
 package org.eclipse.mosaic.app.vehicle;
 
 import org.eclipse.mosaic.app.vehicleconfig.VehicleConfig;
-import org.eclipse.mosaic.app.traci.SlowDownParams;
-import org.eclipse.mosaic.fed.application.app.api.Application;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
@@ -11,8 +9,8 @@ import org.eclipse.mosaic.rti.TIME;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.app.perception.MetricsInteraction;
 
-import java.util.List;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -66,25 +64,27 @@ public class EmergencyManeuver extends AbstractApplication<VehicleOperatingSyste
                 } else {
                     duration = (targetSpeed - currentSpeed) / acceleration;
                 }
-                List<? extends Application> applications = getOs().getApplications();
-                for (Application application : applications) {
-                    String appName = application.getClass().getSimpleName();
-                    if (appName.equals("SlowDown")) {
-                        getLog().infoSimTime(this, "Found SlowDown, scheduling event");
-                        SlowDownParams params = new SlowDownParams(targetSpeed, duration);
-                        this.getOs().getEventManager()
-                                .newEvent(getOs().getSimulationTime() + (long) (reactionTime * TIME.SECOND),
-                                        application)
-                                .withResource(params)
-                                .schedule();
-                    }
-                }
+                this.getOs().getEventManager()
+                        .newEvent(getOs().getSimulationTime() + (long) (reactionTime * TIME.SECOND), this)
+                        .withResource("ChangeSpeed. Duration: " + duration)
+                        .schedule();
                 EmergencyBrakeTrigger trigger = (EmergencyBrakeTrigger) resource;
                 final String metricsId = "veh_0";
                 final MetricsInteraction metricsInteraction = new MetricsInteraction(
                         getOs().getSimulationTime(),
                         metricsId, trigger.ttc, reactionTime, getOs().getSimulationTime());
                 getOs().sendInteractionToRti(metricsInteraction);
+            }
+        } else if (resource instanceof String) {
+            String resourceString = (String) resource;
+            if (resourceString.contains("ChangeSpeed")) {
+                // Define the regex pattern to match a double value
+                Pattern pattern = Pattern.compile("\\d+\\.\\d+");
+                Matcher matcher = pattern.matcher(resourceString);
+                matcher.find();
+
+                double duration = Double.parseDouble(matcher.group());
+                getOs().changeSpeedWithInterval(targetSpeed, (long) (duration * TIME.SECOND));
             }
         } else if (resource instanceof VehicleConfig) {
             VehicleConfig config = (VehicleConfig) resource;
