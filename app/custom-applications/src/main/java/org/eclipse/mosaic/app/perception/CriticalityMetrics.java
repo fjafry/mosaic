@@ -158,7 +158,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         double b = d.dot(v_rel);
         ttc = b / a;
 
-        if (ttc > 0 && ttc < minTTC) {
+        if (ttc > 0 && ttc < minTTC && distance == minDistance) {
             minTTC = ttc;
             minTTCtime = getOs().getSimulationTime();
         }
