@@ -135,8 +135,8 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
             List<? extends Application> applications = getOs().getApplications();
             for (Application application : applications) {
                 String appName = application.getClass().getSimpleName();
-                if (appName.equals("EmergencyBrake")) {
-                    getLog().infoSimTime(this, "Found EmergencyBrake, scheduling event");
+                if (appName.equals("EmergencyManeuver")) {
+                    getLog().infoSimTime(this, "Found EmergencyManeuver, scheduling event");
                     EmergencyBrakeTrigger trigger = new EmergencyBrakeTrigger(ttc, otherPosition);
                     this.getOs().getEventManager()
                             .newEvent(getOs().getSimulationTime() + 1, application)
