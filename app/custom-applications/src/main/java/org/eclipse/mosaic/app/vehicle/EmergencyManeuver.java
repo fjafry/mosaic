@@ -9,6 +9,7 @@ import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
+import org.eclipse.mosaic.app.perception.MetricsInteraction;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class EmergencyManeuver extends AbstractApplication<VehicleOperatingSyste
 
     @Override
     public void onStartup() {
-        getLog().infoSimTime(this, "Startup of emergency maneuver");
+        getLog().infoSimTime(this, "Startup of emergency maneuver app");
     }
 
     @Override
@@ -52,7 +53,8 @@ public class EmergencyManeuver extends AbstractApplication<VehicleOperatingSyste
         Object resource = event.getResource();
         if (resource instanceof EmergencyBrakeTrigger) {
             // Initiate emergency brake if obstacle is detected
-            // TODO: consider position of obstacle and ttc to determine type of emergency maneuver
+            // TODO: consider position of obstacle and ttc to determine type of emergency
+            // maneuver
             if (!emergencyBrake) {
                 emergencyBrake = true;
                 getLog().infoSimTime(this, "Performing emergency brake caused by detected obstacle");
@@ -77,7 +79,12 @@ public class EmergencyManeuver extends AbstractApplication<VehicleOperatingSyste
                                 .schedule();
                     }
                 }
-
+                EmergencyBrakeTrigger trigger = (EmergencyBrakeTrigger) resource;
+                final String metricsId = "veh_0";
+                final MetricsInteraction metricsInteraction = new MetricsInteraction(
+                        getOs().getSimulationTime(),
+                        metricsId, trigger.ttc, reactionTime, getOs().getSimulationTime());
+                getOs().sendInteractionToRti(metricsInteraction);
             }
         } else if (resource instanceof VehicleConfig) {
             VehicleConfig config = (VehicleConfig) resource;
