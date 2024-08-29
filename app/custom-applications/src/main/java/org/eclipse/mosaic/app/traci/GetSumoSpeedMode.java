@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2020 Fraunhofer FOKUS and others. All rights reserved.
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Contact: mosaic@fokus.fraunhofer.de
- */
-
 package org.eclipse.mosaic.app.traci;
 
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
@@ -36,9 +21,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * This application gets the speed mode of the vehicle in SUMO through the interface traci
+ * This application gets the speed mode of the vehicle in SUMO through the
+ * interface traci
  */
-public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication, MosaicApplication {
+public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem>
+        implements VehicleApplication, MosaicApplication {
 
     private long sendTimes = 3; // Contact sumo 3 times
     private String lastSentMsgId;
@@ -57,9 +44,11 @@ public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem
     }
 
     /**
-     * Here a byte array is assembled that follows the traci protocol. With the byte array constructed
+     * Here a byte array is assembled that follows the traci protocol. With the byte
+     * array constructed
      * here we instruct sumo directly to get the heading for the
-     * provided vehicle. <a href="https://sumo.dlr.de/docs/TraCI/Vehicle_Value_Retrieval.html">...</a>
+     * provided vehicle.
+     * <a href="https://sumo.dlr.de/docs/TraCI/Vehicle_Value_Retrieval.html">...</a>
      *
      * @param vehicleId Vehicle to set the speed mode of
      * @return The byte array to be sent to sumo
@@ -67,7 +56,7 @@ public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem
     private byte[] assembleTraciCommand(String vehicleId) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final DataOutputStream dos = new DataOutputStream(baos);
-        final byte TRACI_VEHICLE_RETRIEVAL = (byte) 0xa4;  // Bits Traci Command (0xa4 for vehicle value retrieval)
+        final byte TRACI_VEHICLE_RETRIEVAL = (byte) 0xa4; // Bits Traci Command (0xa4 for vehicle value retrieval)
         final byte TRACI_GET_SPEED_MODE = (byte) 0xb3; // Bits Traci Variable Identifier (0xb3 for speed mode)
 
         try {
@@ -92,7 +81,8 @@ public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem
     }
 
     /**
-     * This method prints out the response given by Sumo, in this case the speed mode
+     * This method prints out the response given by Sumo, in this case the speed
+     * mode
      * of the vehicle this application runs on.
      *
      * @param sumoTraciResult the response container.
@@ -105,8 +95,7 @@ public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem
                     this,
                     "Received TraCI message from Sumo. Speed mode of vehicle {} is {}",
                     speedModeResponse.vehicleId,
-                    speedModeResponse.speedMode
-            );
+                    speedModeResponse.speedMode);
         }
     }
 
@@ -165,4 +154,3 @@ public class GetSumoSpeedMode extends AbstractApplication<VehicleOperatingSystem
 
     }
 }
- 

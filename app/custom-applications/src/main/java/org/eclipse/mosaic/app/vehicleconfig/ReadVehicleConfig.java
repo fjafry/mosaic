@@ -1,17 +1,3 @@
-/*
- * Copyright (c) 2020 Fraunhofer FOKUS and others. All rights reserved.
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Contact: mosaic@fokus.fraunhofer.de
- */
 package org.eclipse.mosaic.app.vehicleconfig;
 
 import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
@@ -23,9 +9,12 @@ import java.util.List;
 
 /**
  * A configuration file(s) should be placed in "application" folder.
- * The filename can end with "_unitId" (e.g. ReadVehicleConfig_veh_1.json) and will then only be used by the specified unit.
- * It allows configuring one application in different ways for different vehicles.
- * If the configuration filename doesn't include any unit id, it will be used for all unspecified units.
+ * The filename can end with "_unitId" (e.g. ReadVehicleConfig_veh_1.json) and
+ * will then only be used by the specified unit.
+ * It allows configuring one application in different ways for different
+ * vehicles.
+ * If the configuration filename doesn't include any unit id, it will be used
+ * for all unspecified units.
  */
 public class ReadVehicleConfig extends ConfigurableApplication<VehicleConfig, VehicleOperatingSystem> {
 
@@ -60,4 +49,3 @@ public class ReadVehicleConfig extends ConfigurableApplication<VehicleConfig, Ve
     }
 
 }
- 

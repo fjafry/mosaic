@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2020 Fraunhofer FOKUS and others. All rights reserved.
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Contact: mosaic@fokus.fraunhofer.de
- */
-
 package org.eclipse.mosaic.app.traci;
 
 import org.eclipse.mosaic.app.vehicleconfig.VehicleConfig;
@@ -111,8 +96,9 @@ public class SetSumoSpeed extends AbstractApplication<VehicleOperatingSystem>
             VehicleConfig config = (VehicleConfig) resource;
             getLog().infoSimTime(this, "Vehicle config read from json file");
             getLog().info("Configs speed equals {}", config.initialSetSpeed);
-            final byte[] traciMsg = assembleTraciCommand(getOs().getId(), config.initialSetSpeed);      // assemble the TraCI msg
-                                                                                             // for sumo
+            final byte[] traciMsg = assembleTraciCommand(getOs().getId(), config.initialSetSpeed); // assemble the TraCI
+                                                                                                   // msg
+            // for sumo
 
             String lastSentMsgId = getOs().sendSumoTraciRequest(traciMsg);
 
