@@ -16,4 +16,5 @@ public class VehicleConfig {
     public double deceleration;
     public double reactionTime;
     public double targetSpeed;
+    public int perceptionSimSteps;
 }

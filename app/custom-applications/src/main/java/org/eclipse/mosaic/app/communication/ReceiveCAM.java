@@ -34,6 +34,7 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
         implements VehicleApplication, CommunicationApplication {
 
     private double emergencyBrakeMinTTC = 3.0;
+    private boolean emergencyBrakeTrigger = false;
 
     /**
      * We should enable ad hoc module here to be able to receive messages that were
@@ -113,20 +114,23 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
     }
 
     private void checkEmergencyBrake(CartesianPoint otherPosition) {
-        double ttc = calculateTTC(getOs().getVehicleData(), otherPosition);
-        if (ttc <= emergencyBrakeMinTTC) {
-            // should apply emergency brake
-            getLog().infoSimTime(this, "Should apply emergency break now. TTC value is {}", ttc);
-            List<? extends Application> applications = getOs().getApplications();
-            for (Application application : applications) {
-                String appName = application.getClass().getSimpleName();
-                if (appName.equals("EmergencyManeuver")) {
-                    getLog().infoSimTime(this, "Found EmergencyManeuver, scheduling event");
-                    EmergencyBrakeTrigger trigger = new EmergencyBrakeTrigger(ttc, otherPosition);
-                    this.getOs().getEventManager()
-                            .newEvent(getOs().getSimulationTime() + 1, application)
-                            .withResource(trigger)
-                            .schedule();
+        if (!emergencyBrakeTrigger) {
+            double ttc = calculateTTC(getOs().getVehicleData(), otherPosition);
+            if (ttc <= emergencyBrakeMinTTC) {
+                // should apply emergency brake
+                emergencyBrakeTrigger = true;
+                getLog().infoSimTime(this, "Should apply emergency break now. TTC value is {}", ttc);
+                List<? extends Application> applications = getOs().getApplications();
+                for (Application application : applications) {
+                    String appName = application.getClass().getSimpleName();
+                    if (appName.equals("EmergencyManeuver")) {
+                        getLog().infoSimTime(this, "Found EmergencyManeuver, scheduling event");
+                        EmergencyBrakeTrigger trigger = new EmergencyBrakeTrigger(ttc, otherPosition);
+                        this.getOs().getEventManager()
+                                .newEvent(getOs().getSimulationTime() + 1, application)
+                                .withResource(trigger)
+                                .schedule();
+                    }
                 }
             }
         }
