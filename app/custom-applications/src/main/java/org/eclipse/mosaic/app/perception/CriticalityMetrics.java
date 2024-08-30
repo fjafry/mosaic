@@ -7,6 +7,7 @@ import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.interactions.application.ApplicationInteraction;
 import org.eclipse.mosaic.lib.geo.CartesianPoint;
+import org.eclipse.mosaic.lib.geo.CartesianPolygon;
 import org.eclipse.mosaic.lib.math.Vector3d;
 import org.eclipse.mosaic.lib.objects.traffic.SumoTraciResult;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
@@ -33,16 +34,18 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
 
     // trigger is the time when emergency maneuver is called
     // reaction is the actual time when the driver reacts (trigger + reaction time)
-    private double ActualTTCAtReaction;
-    private double ActualTTCAtTrigger;
-    private double PlainTTCAtTrigger;
-    private double reactionTime;
-    private long emergencyTriggeredAt;
+    private double ActualTTCAtReaction = 0.0;
+    private double ActualTTCAtTrigger = 0.0;
+    private double PlainTTCAtTrigger = 0.0;
+    private long emergencyTriggeredAt = 0;
 
-    private double distance;
+    private double distance = Double.MAX_VALUE;
     private double minDistance = Double.MAX_VALUE;
-    private double distanceAtTrigger;
-    private double distanceAtReaction;
+    private double distanceAtTrigger = 0.0;
+    private double distanceAtReaction = 0.0;
+
+    private boolean collisionDetected = false;
+    private long collisionOccuredAt = 0;
 
     /**
      * The angle used by the perception module. [degree]
@@ -71,14 +74,15 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
     @Override
     public void onShutdown() {
         getLog().info("minTTC: {} at time: {}", minTTC, minTTCtime);
-        getLog().info("Actual TTC at reaction: {}", ActualTTCAtReaction);
+        getLog().info("Minimum distance: {}", minDistance);
+        getLog().info("Emergency triggered at: {}", emergencyTriggeredAt);
+        getLog().info("Distance at trigger: {}", distanceAtTrigger);
         getLog().info("Actual TTC at trigger: {}", ActualTTCAtTrigger);
         getLog().info("Plain TTC at trigger: {}", PlainTTCAtTrigger);
-        getLog().info("Reaction time: {}", reactionTime);
-        getLog().info("Emergency triggered at: {}", emergencyTriggeredAt);
-        getLog().info("Minimum distance: {}", minDistance);
-        getLog().info("Distance at trigger: {}", distanceAtTrigger);
+        getLog().info("Actual TTC at reaction: {}", ActualTTCAtReaction);
         getLog().info("Distance at reaction: {}", distanceAtReaction);
+        getLog().info("Collision detected: {}", collisionDetected);
+        getLog().info("Collision occured at: {}", collisionOccuredAt);
     }
 
     @Override
@@ -87,6 +91,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         if (targetVehicles.size() <= 1) {
             return;
         }
+        calculateMinDistance(targetVehicles);
         calculateTTC(targetVehicles);
     }
 
@@ -96,8 +101,10 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         if (resource instanceof String) {
             String resourceString = (String) resource;
             if (resourceString.equals("StoreTTC")) {
-                ActualTTCAtReaction = ttc;
-                distanceAtReaction = distance;
+                if (!collisionDetected) {
+                    ActualTTCAtReaction = ttc;
+                    distanceAtReaction = distance;
+                }
             }
         }
     }
@@ -108,13 +115,14 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             final MetricsInteraction metricsInteraction = (MetricsInteraction) applicationInteraction;
             getLog().infoSimTime(this, "MosaicInteractionHandlingApp received MetricsInteraction: {}",
                     metricsInteraction.toString());
-            ActualTTCAtTrigger = ttc;
-            PlainTTCAtTrigger = metricsInteraction.getPlainTTC();
-            reactionTime = metricsInteraction.getReactionTime();
             emergencyTriggeredAt = metricsInteraction.getTriggerTime();
-            distanceAtTrigger = distance;
+            if (!collisionDetected) {
+                ActualTTCAtTrigger = ttc;
+                PlainTTCAtTrigger = metricsInteraction.getPlainTTC();
+                distanceAtTrigger = distance;
+            }
             this.getOs().getEventManager()
-                    .newEvent(getOs().getSimulationTime() + (long) (reactionTime * TIME.SECOND),
+                    .newEvent(getOs().getSimulationTime() + (long) (metricsInteraction.getReactionTime() * TIME.SECOND),
                             this)
                     .withResource("StoreTTC")
                     .schedule();
@@ -146,10 +154,6 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         Vector3d v2 = getVectorFromSpeedAndHeading(vru.getSpeed(), vru.getHeading());
 
         Vector3d d = r1.subtract(r2);
-        distance = d.magnitude();
-        if (distance < minDistance) {
-            minDistance = distance;
-        }
         Vector3d v_rel = v2.subtract(v1);
         if (v_rel.magnitude() == 0) {
             return;
@@ -174,5 +178,78 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
 
     private Vector3d getVectorFromCartesianPoint(CartesianPoint point) {
         return new Vector3d(point.getX(), point.getY(), 0);
+    }
+
+    private void calculateMinDistance(List<VehicleObject> targetVehicles) {
+        VehicleObject ego = targetVehicles.stream().filter(v -> v.getId().equals(config.driverVehicleId)).findFirst()
+                .get();
+        VehicleObject vru = targetVehicles.stream().filter(v -> v.getId().equals(config.vruVehicleId)).findFirst()
+                .get();
+        List<Vector3d> egoCornersVector3d = ego.getBoundingBox().getAllCorners();
+        List<Vector3d> vruCornersVector3d = vru.getBoundingBox().getAllCorners();
+        List<CartesianPoint> egoCornersCartesianPoints = egoCornersVector3d.stream().map(v -> v.toCartesian())
+                .collect(Collectors.toList());
+        List<CartesianPoint> vruCornersCartesianPoints = vruCornersVector3d.stream().map(v -> v.toCartesian())
+                .collect(Collectors.toList());
+        CartesianPolygon egoPolygon = new CartesianPolygon(egoCornersCartesianPoints);
+        CartesianPolygon vruPolygon = new CartesianPolygon(vruCornersCartesianPoints);
+        double currentDistance = Double.MAX_VALUE;
+        if (egoPolygon.isIntersectingPolygon(vruPolygon)) {
+            currentDistance = 0;
+        } else {
+            for (int i = 0; i < 4; i++) {
+                CartesianPoint ego1 = egoCornersCartesianPoints.get(i);
+                CartesianPoint ego2 = egoCornersCartesianPoints.get((i + 1) % 4);
+                for (int j = 0; j < 4; j++) {
+                    CartesianPoint vru1 = vruCornersCartesianPoints.get(j);
+                    CartesianPoint vru2 = vruCornersCartesianPoints.get((j + 1) % 4);
+                    currentDistance = Math.min(currentDistance, getDistanceBetweenPointAndLine(ego1, vru1, vru2));
+                    currentDistance = Math.min(currentDistance, getDistanceBetweenPointAndLine(ego2, vru1, vru2));
+                    currentDistance = Math.min(currentDistance, getDistanceBetweenPointAndLine(vru1, ego1, ego2));
+                    currentDistance = Math.min(currentDistance, getDistanceBetweenPointAndLine(vru2, ego1, ego2));
+                }
+            }
+        }
+        distance = currentDistance;
+        if (currentDistance < minDistance) {
+            minDistance = currentDistance;
+        }
+        if (currentDistance == 0) {
+            collisionDetected = true;
+            collisionOccuredAt = getOs().getSimulationTime();
+        }
+    }
+
+    double getDistanceBetweenPointAndLine(CartesianPoint point, CartesianPoint lineStart, CartesianPoint lineEnd) {
+        double x = point.getX();
+        double y = point.getY();
+        double x1 = lineStart.getX();
+        double y1 = lineStart.getY();
+        double x2 = lineEnd.getX();
+        double y2 = lineEnd.getY();
+        double A = x - x1;
+        double B = y - y1;
+        double C = x2 - x1;
+        double D = y2 - y1;
+        double dot = A * C + B * D;
+        double len_sq = C * C + D * D;
+        double param = -1;
+        if (len_sq != 0) {
+            param = dot / len_sq;
+        }
+        double xx, yy;
+        if (param < 0) {
+            xx = x1;
+            yy = y1;
+        } else if (param > 1) {
+            xx = x2;
+            yy = y2;
+        } else {
+            xx = x1 + param * C;
+            yy = y1 + param * D;
+        }
+        double dx = x - xx;
+        double dy = y - yy;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 }
