@@ -55,7 +55,7 @@ public class EmergencyManeuver extends AbstractApplication<VehicleOperatingSyste
             // maneuver
             if (!emergencyBrake) {
                 emergencyBrake = true;
-                getLog().infoSimTime(this, "Performing emergency brake caused by detected obstacle");
+                getLog().infoSimTime(this, "emergency brake caused by detected obstacle");
 
                 double currentSpeed = getOs().getVehicleData().getSpeed();
                 double duration;
@@ -69,15 +69,16 @@ public class EmergencyManeuver extends AbstractApplication<VehicleOperatingSyste
                         .withResource("ChangeSpeed. Duration: " + duration)
                         .schedule();
                 EmergencyBrakeTrigger trigger = (EmergencyBrakeTrigger) resource;
-                final String metricsId = "veh_0";
                 final MetricsInteraction metricsInteraction = new MetricsInteraction(
                         getOs().getSimulationTime(),
-                        metricsId, trigger.ttc, reactionTime, getOs().getSimulationTime());
+                        null, getOs().getId(), trigger.ttc, reactionTime, getOs().getSimulationTime());
                 getOs().sendInteractionToRti(metricsInteraction);
             }
         } else if (resource instanceof String) {
             String resourceString = (String) resource;
             if (resourceString.contains("ChangeSpeed")) {
+                getLog().infoSimTime(this, "Performing emergency brake after reaction time");
+
                 // Define the regex pattern to match a double value
                 Pattern pattern = Pattern.compile("\\d+\\.\\d+");
                 Matcher matcher = pattern.matcher(resourceString);
