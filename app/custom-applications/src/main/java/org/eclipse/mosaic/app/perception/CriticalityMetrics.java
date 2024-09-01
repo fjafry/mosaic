@@ -54,7 +54,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
     /**
      * The distance used by the perception module. [m]
      */
-    private static final double VIEWING_RANGE = 300d;
+    private static final double VIEWING_RANGE = 400d;
 
     @Override
     public void onStartup() {
@@ -91,8 +91,10 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         if (targetVehicles.size() <= 1) {
             return;
         }
-        calculateMinDistance(targetVehicles);
-        calculateTTC(targetVehicles);
+        if (!collisionDetected) {
+            calculateMinDistance(targetVehicles);
+            calculateTTC(targetVehicles);
+        }
     }
 
     @Override
@@ -115,6 +117,9 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             final MetricsInteraction metricsInteraction = (MetricsInteraction) applicationInteraction;
             getLog().infoSimTime(this, "MosaicInteractionHandlingApp received MetricsInteraction: {}",
                     metricsInteraction.toString());
+            if (metricsInteraction.getVehId().equals(config.vruVehicleId)) {
+                return;
+            }
             emergencyTriggeredAt = metricsInteraction.getTriggerTime();
             if (!collisionDetected) {
                 ActualTTCAtTrigger = ttc;
