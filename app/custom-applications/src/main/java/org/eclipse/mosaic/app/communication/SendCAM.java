@@ -4,12 +4,13 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.Ad
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
-import org.eclipse.mosaic.fed.application.app.AbstractApplication;
+import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
 import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
 import org.eclipse.mosaic.lib.enums.AdHocChannel;
+import org.eclipse.mosaic.lib.objects.v2x.etsi.Cam;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.SerializationUtils;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
@@ -31,8 +32,14 @@ import javax.annotation.Nullable;
  * The CAMs will be sent by an ad hoc module so that only vehicles with an
  * enabled ad hoc module can receive it.
  **/
-public class SendCAM extends AbstractApplication<VehicleOperatingSystem>
+public class SendCAM extends ConfigurableApplication<CamConfig, VehicleOperatingSystem>
         implements VehicleApplication, CommunicationApplication {
+
+    public SendCAM() {
+        super(CamConfig.class, "CamConfig");
+    }
+
+    private long camInterval = 100 * TIME.MILLI_SECOND;;
 
     /**
      * If the control of every byte is not needed, the
@@ -65,7 +72,13 @@ public class SendCAM extends AbstractApplication<VehicleOperatingSystem>
         // sense when we have access to vehicle info of sender, which is not ready at
         // the set up stage.
 
-        getOs().getEventManager().addEvent(getOs().getSimulationTime() + 1, this);
+        CamConfig config = this.getConfiguration();
+
+        getOs().getEventManager().addEvent(getOs().getSimulationTime() + config.sendFirstCamAt * TIME.SECOND, this);
+        if (config.frequency > 0) {
+            camInterval = (long) (((double) 1 / config.frequency) * TIME.SECOND);
+        }
+        getLog().infoSimTime(this, "CAM will be sent every {} ms", camInterval);
     }
 
     /**
@@ -76,7 +89,7 @@ public class SendCAM extends AbstractApplication<VehicleOperatingSystem>
         if (!("VehicleConfig".equals(event.getResourceClassSimpleName()))) { // ignore for events created by vehicle
                                                                              // config reading
             sendCam();
-            getOs().getEventManager().addEvent(getOs().getSimulationTime() + 100 * TIME.MILLI_SECOND, this);
+            getOs().getEventManager().addEvent(getOs().getSimulationTime() + camInterval, this);
         }
     }
 
