@@ -9,6 +9,7 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.error
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.errormodels.BoundingBoxOcclusion;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
+import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
 import org.eclipse.mosaic.fed.application.app.api.Application;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
@@ -27,13 +28,20 @@ import javax.annotation.Nullable;
  * and its
  * {@link org.eclipse.mosaic.fed.application.ambassador.simulation.perception.errormodels.PerceptionModifier}s.
  */
-public class Perception extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication {
+public class Perception extends ConfigurableApplication<PerceptionConfig, VehicleOperatingSystem>
+        implements VehicleApplication {
+
+    public Perception() {
+        super(PerceptionConfig.class, "PerceptionConfig");
+    }
 
     private double emergencyBrakeMinTTC = 3.0;
     private String perceptionTargetId;
     private boolean emergencyBrakeTrigger = false;
     private int perceivedCounter = 0;
     private int perceptionSimSteps = 10;
+    private double viewingAngle;
+    private double viewingRange;
 
     private DetermineReaction determineReaction;
 
@@ -49,7 +57,9 @@ public class Perception extends AbstractApplication<VehicleOperatingSystem> impl
     @Override
     public void onStartup() {
         getLog().infoSimTime(this, "Started {} on {}.", this.getClass().getSimpleName(), getOs().getId());
-
+        PerceptionConfig config = this.getConfiguration();
+        viewingAngle = config.viewingAngle == 0 ? VIEWING_ANGLE : config.viewingAngle;
+        viewingRange = config.viewingRange == 0 ? VIEWING_RANGE : config.viewingRange;
         enablePerceptionModule();
     }
 
@@ -62,7 +72,7 @@ public class Perception extends AbstractApplication<VehicleOperatingSystem> impl
         PositionModifier positionModifier = new PositionModifier(getRandom());
 
         SimplePerceptionConfiguration perceptionModuleConfiguration = new SimplePerceptionConfiguration.Builder(
-                VIEWING_ANGLE, VIEWING_RANGE)
+                viewingAngle, viewingRange)
                 .addModifiers(boundingBoxOcclusion, distanceFilter, positionModifier)
                 .build();
         getOs().getPerceptionModule().enable(perceptionModuleConfiguration);
@@ -75,7 +85,14 @@ public class Perception extends AbstractApplication<VehicleOperatingSystem> impl
 
     @Override
     public void onVehicleUpdated(@Nullable VehicleData previousVehicleData, @Nonnull VehicleData updatedVehicleData) {
-        List<VehicleObject> targetVehicles = perceiveVehicles();
+        if (this.perceptionTargetId == null) {
+            return;
+        }
+        List<VehicleObject> targetVehicles;
+        if (perceptionSimSteps == 0) {
+            return;
+        }
+        targetVehicles = perceiveVehicles();
         if (targetVehicles.isEmpty()) {
             if (perceivedCounter != 0) {
                 perceivedCounter--;
@@ -84,10 +101,10 @@ public class Perception extends AbstractApplication<VehicleOperatingSystem> impl
         } else {
             if (perceivedCounter < perceptionSimSteps) {
                 perceivedCounter++;
-                if (perceivedCounter == perceptionSimSteps && !emergencyBrakeTrigger) {
-                    checkEmergencyBrake(targetVehicles.get(0).getPosition().toCartesian());
-                }
             }
+        }
+        if (perceivedCounter == perceptionSimSteps && !emergencyBrakeTrigger) {
+            checkEmergencyBrake(targetVehicles.get(0).getPosition().toCartesian());
         }
     }
 
@@ -100,7 +117,8 @@ public class Perception extends AbstractApplication<VehicleOperatingSystem> impl
             getLog().info("Configs emergencyBrakeMinTTC is {} s", config.emergencyBrakeMinTTC);
             getLog().info("Configs perception target is {} s", config.perceptionTargetId);
             getLog().info("Configs perception sim steps to consider {}", config.perceptionSimSteps);
-            emergencyBrakeMinTTC = config.emergencyBrakeMinTTC;
+            emergencyBrakeMinTTC = config.emergencyBrakeMinTTC == 0 ? this.emergencyBrakeMinTTC
+                    : config.emergencyBrakeMinTTC;
             perceptionTargetId = config.perceptionTargetId;
             perceptionSimSteps = config.perceptionSimSteps;
             determineReaction = new DetermineReaction(this.getOs(), getLog(), emergencyBrakeMinTTC);
