@@ -65,7 +65,7 @@ public class Perception extends ConfigurableApplication<PerceptionConfig, Vehicl
 
     private void enablePerceptionModule() {
         // filter to emulate occlusion
-        BoundingBoxOcclusion boundingBoxOcclusion = new BoundingBoxOcclusion();
+        BoundingBoxOcclusion boundingBoxOcclusion = new BoundingBoxOcclusion(3, 2);
         // filter to reduce perception probability based on distance to ego vehicle
         DistanceFilter distanceFilter = new DistanceFilter(getRandom(), 0.0);
         // filter adding noise to longitudinal and lateral
