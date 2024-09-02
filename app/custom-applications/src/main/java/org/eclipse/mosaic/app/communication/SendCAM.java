@@ -12,12 +12,12 @@ import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
 import org.eclipse.mosaic.lib.enums.AdHocChannel;
 import org.eclipse.mosaic.lib.objects.v2x.etsi.Cam;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
-import org.eclipse.mosaic.lib.util.SerializationUtils;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 
 import java.io.IOException;
 import java.io.Serializable;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -39,24 +39,8 @@ public class SendCAM extends ConfigurableApplication<CamConfig, VehicleOperating
         super(CamConfig.class, "CamConfig");
     }
 
-    private long camInterval = 100 * TIME.MILLI_SECOND;;
-
-    /**
-     * If the control of every byte is not needed, the
-     * {@link SerializationUtils} can be used. This class converts an
-     * object into a byte field and vice versa.
-     */
-    public static final SerializationUtils<MyComplexTaggedValue> DEFAULT_OBJECT_SERIALIZATION = new SerializationUtils<>();
-
-    private static class MyComplexTaggedValue implements Serializable {
-        public int fooInt;
-        public String fooString;
-
-        @Override
-        public String toString() {
-            return "MyComplexTaggedValue: fooInt=" + fooInt + ", " + "fooString=" + fooString;
-        }
-    }
+    private long camInterval = 100 * TIME.MILLI_SECOND;
+    private long sendLastCamAt = 0;
 
     /**
      * Setting up the communication module and scheduling next event for the next
@@ -74,11 +58,15 @@ public class SendCAM extends ConfigurableApplication<CamConfig, VehicleOperating
 
         CamConfig config = this.getConfiguration();
 
-        getOs().getEventManager().addEvent(getOs().getSimulationTime() + config.sendFirstCamAt * TIME.SECOND, this);
+        getOs().getEventManager().newEvent(config.sendFirstCamAt * TIME.SECOND, this)
+                .withResource("FirstCam")
+                .schedule();
+        sendLastCamAt = config.sendLastCamAt * TIME.SECOND;
+
         if (config.frequency > 0) {
             camInterval = (long) (((double) 1 / config.frequency) * TIME.SECOND);
         }
-        getLog().infoSimTime(this, "CAM will be sent every {} ms", camInterval);
+        getLog().infoSimTime(this, "CAM will be sent every {} ns", camInterval);
     }
 
     /**
@@ -86,16 +74,28 @@ public class SendCAM extends ConfigurableApplication<CamConfig, VehicleOperating
      */
     @Override
     public void processEvent(Event event) {
-        if (!("VehicleConfig".equals(event.getResourceClassSimpleName()))) { // ignore for events created by vehicle
-                                                                             // config reading
-            sendCam();
-            getOs().getEventManager().addEvent(getOs().getSimulationTime() + camInterval, this);
+        Object resource = event.getResource();
+        if (resource instanceof String) {
+            String resourceString = (String) resource;
+            if (resourceString.equals("FirstCam")) {
+                sendCam();
+                getOs().getEventManager().newEvent(getOs().getSimulationTime() + camInterval, this)
+                        .withResource("NextCam")
+                        .schedule();
+            } else if (resourceString.equals("NextCam")) {
+                sendCam();
+                if (getOs().getSimulationTime() + camInterval < sendLastCamAt) {
+                    getOs().getEventManager().newEvent(getOs().getSimulationTime() + camInterval, this)
+                            .withResource("NextCam")
+                            .schedule();
+                }
+            }
         }
     }
 
     private void sendCam() {
-        getLog().infoSimTime(this, "Sending CAM");
-        getOs().getAdHocModule().sendCam();
+        int msgId = getOs().getAdHocModule().sendCam();
+        getLog().info("Sending CAM with msgId: {} at simulation time: {}", msgId, getOs().getSimulationTime());
     }
 
     @Override
@@ -108,23 +108,6 @@ public class SendCAM extends ConfigurableApplication<CamConfig, VehicleOperating
 
     @Override
     public void onCamBuilding(CamBuilder camBuilder) {
-        // this method will be triggered from the operating system (may a CAM or DENM
-        // will be prepared to send)
-        // create a new object
-        // CamSendingApp.MyComplexTaggedValue exampleContent = new
-        // CamSendingApp.MyComplexTaggedValue();
-        // exampleContent.fooInt = 5;
-        // exampleContent.fooString = "Hello from " + (getOs().getVehicleData() != null
-        // ? getOs().getVehicleData().getName()
-        // : "unknown vehicle"
-        // );
-
-        // try {
-        // byte[] byteArray = DEFAULT_OBJECT_SERIALIZATION.toBytes(exampleContent);
-        // camBuilder.userTaggedValue(byteArray);
-        // } catch (IOException ex) {
-        // getLog().error("Error during a serialization.", ex);
-        // }
     }
 
     @Override

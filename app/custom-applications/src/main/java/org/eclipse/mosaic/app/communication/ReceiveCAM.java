@@ -53,11 +53,12 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
 
         if (msg instanceof Cam) {
             Cam camMsg = (Cam) msg;
-            getLog().infoSimTime(this,
-                    "CAM message arrived, from vehicle: {}, at position: {}. transmission delay: {}",
+            getLog().info(
+                    "CAM message arrived, from vehicle: {}, with msgId: {}. transmission delay: {} at simulation time: {}",
                     camMsg.getUnitID(),
-                    camMsg.getPosition(),
-                    (getOs().getSimulationTime() - camMsg.getGenerationTime()));
+                    camMsg.getId(),
+                    (getOs().getSimulationTime() - camMsg.getGenerationTime()),
+                    getOs().getSimulationTime());
             checkEmergencyBrake(camMsg.getPosition().toCartesian());
 
         } else {
@@ -93,7 +94,8 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
             VehicleConfig config = (VehicleConfig) resource;
             getLog().infoSimTime(this, "Vehicle config read from json file");
             getLog().info("Configs emergencyBrakeMinTTC is {} s", config.emergencyBrakeMinTTC);
-            emergencyBrakeMinTTC = config.emergencyBrakeMinTTC;
+            emergencyBrakeMinTTC = config.emergencyBrakeMinTTC == 0 ? this.emergencyBrakeMinTTC
+                    : config.emergencyBrakeMinTTC;
         }
     }
 
