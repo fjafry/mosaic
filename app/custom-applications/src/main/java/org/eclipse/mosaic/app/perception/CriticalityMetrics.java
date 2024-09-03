@@ -30,6 +30,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
     private double ttc = 0.0;
     private double minTTC = Double.MAX_VALUE;
     private long minTTCtime = 0;
+    private boolean ttcIncreased = false;
     private MetricsConfig config;
 
     // trigger is the time when emergency maneuver is called
@@ -167,11 +168,17 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         double b = d.dot(v_rel);
         ttc = b / a;
 
-        if (ttc > 0 && ttc < minTTC && distance == minDistance) {
+        boolean vruLeftCA = vru.getPosition().toCartesian().getY()
+                - vru.getLength() > ego.getPosition().toCartesian().getY() + ego.getWidth() / 2;
+
+        if (ttc > 0 && ttc < minTTC && distance == minDistance && !vruLeftCA && ego.getSpeed() > 0 && !ttcIncreased) {
             minTTC = ttc;
             minTTCtime = getOs().getSimulationTime();
+        } else if (ttc > minTTC && !ttcIncreased) {
+            ttcIncreased = true;
         }
-        getLog().debugSimTime(this, "TTC: {}", ttc);
+        getLog().debugSimTime(this, "Time: {}, speed: {}, a: {}, b: {}, TTC: {}", getOs().getSimulationTime(),
+                ego.getSpeed(), a, b, ttc);
     }
 
     private Vector3d getVectorFromSpeedAndHeading(double speed, double heading) {
@@ -216,6 +223,8 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             }
         }
         distance = currentDistance;
+        getLog().debugSimTime(this, "Current Distance: {}", currentDistance);
+
         if (currentDistance < minDistance) {
             minDistance = currentDistance;
         }
