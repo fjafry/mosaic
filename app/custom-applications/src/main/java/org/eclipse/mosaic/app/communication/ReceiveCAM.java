@@ -35,6 +35,7 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
 
     private double emergencyBrakeMinTTC = 3.0;
     private boolean emergencyBrakeTrigger = false;
+    private String perceptionTargetId;
 
     /**
      * We should enable ad hoc module here to be able to receive messages that were
@@ -59,7 +60,9 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
                     camMsg.getId(),
                     (getOs().getSimulationTime() - camMsg.getGenerationTime()),
                     getOs().getSimulationTime());
-            checkEmergencyBrake(camMsg.getPosition().toCartesian());
+            if (camMsg.getUnitID().equals(perceptionTargetId)) {
+                checkEmergencyBrake(camMsg.getPosition().toCartesian());
+            }
 
         } else {
             getLog().infoSimTime(this, "Arrived message was not a CAM, but a {} msg from {}", msg.getSimpleClassName(),
@@ -96,6 +99,7 @@ public class ReceiveCAM extends AbstractApplication<VehicleOperatingSystem>
             getLog().info("Configs emergencyBrakeMinTTC is {} s", config.emergencyBrakeMinTTC);
             emergencyBrakeMinTTC = config.emergencyBrakeMinTTC == 0 ? this.emergencyBrakeMinTTC
                     : config.emergencyBrakeMinTTC;
+            perceptionTargetId = config.perceptionTargetId;
         }
     }
 
