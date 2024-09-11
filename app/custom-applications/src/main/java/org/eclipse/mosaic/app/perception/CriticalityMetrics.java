@@ -159,14 +159,15 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
         Vector3d v1 = getVectorFromSpeedAndHeading(ego.getSpeed(), ego.getHeading());
         Vector3d v2 = getVectorFromSpeedAndHeading(vru.getSpeed(), vru.getHeading());
 
-        Vector3d d = r1.subtract(r2);
+        Vector3d d_rel = r1.subtract(r2);
         Vector3d v_rel = v2.subtract(v1);
         if (v_rel.magnitude() == 0) {
             return;
         }
-        double a = v_rel.dot(v_rel);
-        double b = d.dot(v_rel);
-        ttc = b / a;
+
+        double v_rel_magnitude = v_rel.magnitude();
+        double d_rel_magnitude = d_rel.magnitude();
+        ttc = d_rel_magnitude / v_rel_magnitude;
 
         boolean vruLeftCA = vru.getPosition().toCartesian().getY()
                 - vru.getLength() > ego.getPosition().toCartesian().getY() + ego.getWidth() / 2;
@@ -178,8 +179,9 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             ttcIncreased = true;
             getLog().infoSimTime(this, "minTTC set to {}", minTTC);
         }
-        getLog().debugSimTime(this, "Time: {}, speed: {}, a: {}, b: {}, TTC: {}", getOs().getSimulationTime(),
-                ego.getSpeed(), a, b, ttc);
+        getLog().debugSimTime(this, "Time: {}, speed: {}, Relative speed: {}, Relative distance: {}, TTC: {}",
+                getOs().getSimulationTime(),
+                ego.getSpeed(), v_rel_magnitude, d_rel_magnitude, ttc);
     }
 
     private Vector3d getVectorFromSpeedAndHeading(double speed, double heading) {
