@@ -176,6 +176,7 @@ public class CriticalityMetrics extends ConfigurableApplication<MetricsConfig, V
             minTTCtime = getOs().getSimulationTime();
         } else if (ttc > minTTC && !ttcIncreased) {
             ttcIncreased = true;
+            getLog().infoSimTime(this, "minTTC set to {}", minTTC);
         }
         getLog().debugSimTime(this, "Time: {}, speed: {}, a: {}, b: {}, TTC: {}", getOs().getSimulationTime(),
                 ego.getSpeed(), a, b, ttc);
